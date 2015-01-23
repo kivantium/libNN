@@ -34,10 +34,18 @@ int main(void){
     // repeat time is your choice
     const int repeat = 500;
     net.train(x, t, sample, repeat);
-    
     // show the result
     for(int i=0; i<sample; i++){
         cout << net.predict(x+size*i) << endl;
     }
+    
+    // save and load example
+    /*
+    net.save("data.csv");
+    mlp net2("data.csv");
+    for(int i=0; i<sample; i++){
+        cout << net2.predict(x+size*i) << endl;
+    }
+    */
     return 0;
 }

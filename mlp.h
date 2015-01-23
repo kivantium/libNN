@@ -1,6 +1,8 @@
 #ifndef LIBNN_MLP
 #define LIBNN_MLP
 
+#include <string>
+#include <fstream>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
@@ -59,6 +61,40 @@ private:
     }
 
 public:
+    mlp(const std::string filename){
+        std::ifstream ifs(filename.c_str());
+        if(!ifs){
+            std::cout << "File does not exist" << std::endl;
+            exit(1);
+        }
+        std::string str;
+        ifs >> str;
+        if(str!="LIBNN_MLP_0"){
+            std::cout << "File type error!" << std::endl;
+            exit(1);
+        }
+        ifs >> in >> hid >> out;
+        // allocate inputs
+        xi1 = new float[in+1];
+        xi2 = new float[hid+1];
+        xi3 = new float[out];
+
+        // allocate outputs
+        o1 = new float[in+1];
+        o2 = new float[hid+1];
+        o3 = new float[out];
+
+        // allocate errors
+        d2 = new float[hid+1];
+        d3 = new float[out];
+
+        // allocate memories
+        w1 = new float[(in+1)*hid];
+        w2 = new float[(hid+1)*out];
+
+        for(int i=0; i<(in+1)*hid; i++)  ifs >> w1[i];
+        for(int i=0; i<(hid+1)*out; i++) ifs >> w2[i]; 
+    }
     /* constructor
      * n_in:  number of input layer
      * n_hid: number of hidden layer
@@ -138,7 +174,7 @@ public:
                 }
                 // update the wait of hidden layer
                 for(int i=0; i<in+1; i++){
-                    for(int j=0; j<hid+1; j++){
+                    for(int j=0; j<hid; j++){
                         w1[i*hid+j] -= eta*d2[j]*o1[i];
                     }
                 }
@@ -160,6 +196,18 @@ public:
             }
         }
         return ans;
+    }
+
+     // save mlp to csv file
+    void save(const std::string filename){
+        std::ofstream ofs(filename.c_str());
+        ofs << "LIBNN_MLP_0" << std::endl;
+        ofs << in << " " << hid << " " << out << std::endl;
+        for(int i=0; i<(in+1)*hid-1; i++) ofs << w1[i] << " ";
+        ofs << w1[(in+1)*hid-1] << std::endl;
+        for(int i=0; i<(hid+1)*out-1; i++) ofs << w2[i] << " "; 
+        ofs << w2[(hid+1)*out-1] << std::endl;
+        ofs.close();
     }
 };
 
